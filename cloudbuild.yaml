@@ -1,0 +1,17 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--tag', '${_IMAGE}:${_TAG}', '--build-arg', 'PROMPTS_PATH=${_PROMPTS_PATH}', '--build-arg', 'FINISHERS_PATH=${_FINISHERS_PATH}', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE}:${_TAG}']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: ['run', 'deploy', '${_SERVICE_NAME}', '--image', '${_IMAGE}:${_TAG}', '--region', '${_REGION}', ' --platform', 'managed', '--allow-unauthenticated']
+substitutions:
+  _IMAGE: europe-west9-docker.pkg.dev/se-pelo-server/server-repository/server-image
+  _TAG: latest
+  _PROMPTS_PATH: resources/prompts.csv
+  _FINISHERS_PATH: resources/finishers.csv
+  _SERVICE_NAME: server-sa
+  _REGION: europe-west1
+images:
+  - '${_IMAGE}'

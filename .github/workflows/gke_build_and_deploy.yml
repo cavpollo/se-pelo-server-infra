@@ -1,0 +1,59 @@
+# https://github.com/actions/checkout
+# https://github.com/google-github-actions/auth?tab=readme-ov-file#direct-wif
+# https://github.com/google-github-actions/deploy-cloudrun
+
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches: [ "master" ]
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GKE_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_REGION: ${{ secrets.GKE_GAR_REGION }}
+  REPOSITORY_NAME: ${{ secrets.GKE_GAR_REPOSITORY }}
+  SERVICE_NAME: ${{ secrets.GKE_SERVICE_NAME }}
+
+  PROMPTS_PATH: ./resources/prompts.csv
+  FINISHERS_PATH: ./resources/finishers.csv
+jobs:
+  setup-auth-deploy:
+    name: Setup, Auth and Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout Infra
+      uses: actions/checkout@v4
+
+    - name: Checkout Public Repo
+      uses: actions/checkout@v4
+      with:
+        repository: cavpollo/se-pelo-server
+        path: code
+        ref: master
+
+    # Configure Workload Identity Federation and generate an access token.
+    - id: 'auth'
+      name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+        workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+
+    # Deploy the code
+    - name: Deploy
+      uses: google-github-actions/deploy-cloudrun@v2
+      with:
+        gcloud_version: "455.0.0"
+        project_id: ${{ env.PROJECT_ID }}
+        region: "${{ env.GCP_REGION }}"
+        service: "${{ env.SERVICE_NAME }}"
+        source: './'
+        env_vars: |
+          PROMPTS_PATH=${{ env.PROMPTS_PATH }}
+          FINISHERS_PATH=${{ env.FINISHERS_PATH }}

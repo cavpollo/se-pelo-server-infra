@@ -1,0 +1,2 @@
+# Don't include the generated credentials (from the google-github-actions/auth) into the published build
+gha-creds-*.json

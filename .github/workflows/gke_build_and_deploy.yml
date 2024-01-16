@@ -2,7 +2,7 @@
 # https://github.com/google-github-actions/auth?tab=readme-ov-file#direct-wif
 # https://github.com/google-github-actions/deploy-cloudrun
 
-name: Build and Deploy to GKE
+name: Build and Deploy to GCP
 
 on:
   push:
@@ -12,7 +12,6 @@ env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GKE_WORKLOAD_IDENTITY_PROVIDER }}
   GCP_REGION: ${{ secrets.GKE_GAR_REGION }}
-  REPOSITORY_NAME: ${{ secrets.GKE_GAR_REPOSITORY }}
   SERVICE_NAME: ${{ secrets.GKE_SERVICE_NAME }}
 
   PROMPTS_PATH: ./resources/prompts.csv
